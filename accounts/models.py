@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
@@ -11,21 +12,28 @@ import os
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, email, password=None):
+    def create_user(self, username, email, password=None):
+        """
+        Create and save a user with the given username, email, and password.
+        """
+        if not username:
+            raise ValueError('The given username must be set')
         if not email:
             raise ValueError('The given email must be set')
 
-        # e-mail addressの正規化
+        # email addressの正規化
         email = self.normalize_email(email)
-        user = self.model(email=email)
+        # username
+        username = self.model.normalize_username(username)
+        user = self.model(username=username, email=email)
         # passwordをハッシュ化してから設定
         user.set_password(password)
         # self._dbは、settings.pyで設定したdefaultのデータベース
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password):
-        user = self.create_user(email, password)
+    def create_superuser(self, username, email, password):
+        user = self.create_user(username, email, password)
         user.is_superuser = True
         user.is_staff = True
         user.is_verified = True
@@ -35,8 +43,12 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    username_validator = UnicodeUsernameValidator()
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=50, unique=True)
+    username = models.CharField(max_length=150, validators=[
+                                username_validator], unique=True)
     # ユーザー登録の確認メールのURLが押されると、is_verifiedがTrueになる。
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -46,8 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
     # 登録時にユーザー名の代わりにメールアドレスを利用する
     USERNAME_FIELD = 'email'
-
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username']
 
     def __str__(self):
         return self.email

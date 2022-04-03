@@ -23,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         # get_user_modelは現在有効なユーザーモデル（今回はカスタムしたUserモデル）を取得できる
         model = get_user_model()
-        fields = ['email', 'password']
+        fields = ['username', 'email', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):

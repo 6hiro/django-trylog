@@ -8,10 +8,10 @@ class UserAdmin(BaseUserAdmin):
     # リストページの並び順
     ordering = ['date_joined']
     # Userのリストページのに表示する項目
-    list_display = ['email', 'date_joined']
+    list_display = ['email', 'date_joined', 'username']
     # Userの詳細ページのレイアウト
     fieldsets = (
-        (None, {'fields': ('email', 'password')}),
+        (None, {'fields': ('email', 'password', 'username')}),
         (_('Personal Info'), {'fields': ()}),
         (
             _('Permissions'),
