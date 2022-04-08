@@ -22,7 +22,7 @@ class JWTAuthentication(BaseAuthentication):
         raise exceptions.AuthenticationFailed('unauthenticated')
 
 
-def create_access_token(id, exp=3000):
+def create_access_token(id, exp=30):
     return jwt.encode({
         'user_id': id,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=exp),

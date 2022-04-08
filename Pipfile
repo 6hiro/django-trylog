@@ -12,6 +12,9 @@ pyjwt = "*"
 djangorestframework-camel-case = "*"
 pillow = "*"
 django-cors-headers = "*"
+gunicorn = "*"
+django-heroku = "*"
+whitenoise = "*"
 
 [dev-packages]
 
