@@ -7,7 +7,7 @@ from django.shortcuts import redirect
 import jwt
 import random
 from rest_framework import generics, status, views, viewsets, exceptions
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 import string
@@ -27,10 +27,11 @@ from ..permissions import (
     InOwnOrReadOnly,
     IsOwnProfileOrReadOnly
 )
-from ..serializers import (
+from ..serializers.accounts_serializers import (
     UserSerializer,
     LoginSerializer,
-    ProfileSerializer
+    ProfileSerializer,
+    ProfilesSerializer
 )
 from ..utils import Util
 
@@ -59,7 +60,7 @@ class RegisterAPIView(generics.GenericAPIView):
 
             url = 'http://' + current_site + \
                 relativeLink + "?token=" + str(token)
-            email_body = user.email + \
+            email_body = user.username + \
                 'さん、ご登録ありがとうございます。\nメールアドレスに間違いがなければ、以下のリンクからログインしてください。 \n' + url
             data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'メールアドレスを確認してください'}
@@ -84,7 +85,7 @@ class VerifyEmail(views.APIView):
                 Profile.objects.create(user=user, nick_name='ななしさん')
 
             # return Response({'email': 'Succressfully activated'}, status=status.HTTP_200_OK)
-            redirect_url = settings.FRONTEND_URL
+            redirect_url = settings.FRONTEND_URL + "/auth/login"
             # redirect_url = 'http://localhost:3000'
             return redirect(redirect_url)
 
@@ -177,7 +178,7 @@ class ForgotAPIView(views.APIView):
             token=token
         )
 
-        url = 'http://localhost:3000/reset/' + token
+        url = settings.FRONTEND_URL + '/auth/reset-password/' + token
 
         email_body = 'パスワードをリセットする場合、以下のリンクをクリックしてください。 \n' + url
         data = {'email_body': email_body, 'to_email': email,
@@ -210,7 +211,7 @@ class ResetAPIView(views.APIView):
         user.save()
 
         # Resetオブジェクトを削除
-        # reset_password.delete()
+        reset_password.delete()
 
         return Response({
             'message': 'success'
@@ -220,27 +221,33 @@ class ResetAPIView(views.APIView):
 class DeleteUserAPIView(generics.DestroyAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
+    authentication_classes = (JWTAuthentication,)
     permission_classes = (InOwnOrReadOnly,)
 
 
-@ api_view(['GET'])
-@ permission_classes((IsAuthenticated,))
+@api_view(['GET'])
+@authentication_classes((JWTAuthentication,))
+@permission_classes((IsAuthenticated,))
 def get_following(request, id):
     following = Profile.objects.filter(followers=id)
-    serializers = ProfileSerializer(following, many=True)
+    serializers = ProfilesSerializer(following, many=True)
     return Response(serializers.data)
 
 
-@ api_view(['POST'])
-@ permission_classes((IsAuthenticated,))
-def get_followers(request):
-    followers = Profile.objects.filter(user_id__in=request.data["followers"])
-    serializers = ProfileSerializer(followers, many=True)
+@api_view(['GET'])
+@authentication_classes((JWTAuthentication,))
+@permission_classes((IsAuthenticated,))
+def get_followers(request, id):
+    user_id_list = Profile.objects.filter(
+        id=id).first().followers.all().values_list('id', flat=True)
+    followers = Profile.objects.filter(user_id__in=user_id_list)
+    serializers = ProfilesSerializer(followers, many=True)
     return Response(serializers.data)
 
 
-@ api_view(['POST'])
-@ permission_classes((IsAuthenticated,))
+@api_view(['PUT'])
+@authentication_classes((JWTAuthentication,))
+@permission_classes((IsAuthenticated,))
 def follow_user(request, id):
     # followする側のUser
     user = request.user

@@ -3,15 +3,14 @@ from django.contrib.auth import get_user_model
 from django.contrib import auth
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import serializers
-from rest_framework.fields import ReadOnlyField
+from rest_framework.fields import ReadOnlyField, CurrentUserDefault
 from rest_framework.serializers import SerializerMethodField
-from .authentication import (
+from ..authentication import (
     create_access_token,
     create_refresh_token,
 )
 
 from accounts.models import Profile
-# from post.models import PostModel, TagModel, CommentModel
 # from roadmap.models import RoadMapModel, StepModel, LookBackModel
 
 
@@ -28,6 +27,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return get_user_model().objects.create_user(**validated_data)
+
+
+class GetUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        # get_user_modelは現在有効なユーザーモデル（今回はカスタムしたUserモデル）を取得できる
+        model = get_user_model()
+        fields = ['id', 'username']
+        # extra_kwargs = {'password': {'write_only': True}}
 
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -71,23 +78,65 @@ class LoginSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    following = SerializerMethodField()
+    # following = SerializerMethodField()
+    count_following = SerializerMethodField()
+    count_follower = SerializerMethodField()
+    is_followed = SerializerMethodField()
+
     created_at = serializers.DateTimeField(format="%Y-%m-%d", read_only=True)
+    user = GetUserSerializer(read_only=True)
 
     class Meta:
         model = Profile
-        fields = ('id', 'nick_name', 'user',
-                  'created_at', 'img', 'followers', 'following')
+        fields = ('id', 'nick_name', 'user', 'created_at', 'img',
+                  'bio', 'is_followed', 'count_follower', 'count_following')
         extra_kwargs = {'user': {'read_only': True}}
 
-    def get_following(self, obj):
+    # def get_following(self, instance):
 
-        if obj.user is None:
-            return None
+    #     if instance.user is None:
+    #         return None
+    #     else:
+    #         following = Profile.objects.filter(
+    #             followers=instance.user).values()
+    #         following_list = []
+    #         for i in range(len(following)):
+    #             following_list.append(following[i]['user_id'])
+    #         return following_list
+
+    def get_is_followed(self, instance):
+        # return None
+        return instance.followers.filter(id=self.context['request'].user.id).exists()
+
+    def get_count_following(self, instance):
+        count_following = Profile.objects.filter(
+            followers=instance.user).count()
+        return count_following
+
+    def get_count_follower(self, instance):
+        return instance.followers.count()
+
+
+class ProfilesSerializer(serializers.ModelSerializer):
+
+    created_at = serializers.DateTimeField(format="%Y-%m-%d", read_only=True)
+    user = GetUserSerializer(read_only=True)
+    img = SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        fields = ('id', 'nick_name', 'user', 'created_at', 'img')
+        extra_kwargs = {'user': {'read_only': True}}
+
+    # def get_user(self, instance):
+    #     return instance.followers.count()
+
+    def get_img(self, instance):
+        img = instance.img
+
+        if img:
+            img_url = f"http://127.0.0.1:8000{settings.MEDIA_URL}{str(img)}"
         else:
-            following = Profile.objects.filter(
-                followers=obj.user).values()
-            following_list = []
-            for i in range(len(following)):
-                following_list.append(following[i]['user_id'])
-            return following_list
+            img_url = None
+
+        return img_url

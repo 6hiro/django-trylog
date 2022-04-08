@@ -22,7 +22,7 @@ class JWTAuthentication(BaseAuthentication):
         raise exceptions.AuthenticationFailed('unauthenticated')
 
 
-def create_access_token(id, exp=30):
+def create_access_token(id, exp=3000):
     return jwt.encode({
         'user_id': id,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=exp),
@@ -32,7 +32,7 @@ def create_access_token(id, exp=30):
 
 
 def decode_access_token(token):
-    print(token)
+    # print(token)
     try:
         # payload = jwt.decode(token, 'access_secret', algorithms='HS256')
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms='HS256')
