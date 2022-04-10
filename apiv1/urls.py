@@ -30,6 +30,9 @@ urlpatterns = [
     path('forgot/', accounts_views.ForgotAPIView.as_view(), name='forgot-password'),
     path('reset-password/', accounts_views.ResetAPIView.as_view(),
          name='reset-password'),
+    #     path('user/', accounts_views.UserAPIView.as_view(), name='user'),
+    path('update-account/<uuid:pk>/',
+         accounts_views.UpdateUserAPIView.as_view(), name="updare-user"),
     path('delete-account/<uuid:pk>/',
          accounts_views.DeleteUserAPIView.as_view(), name="delete-user"),
     # profile

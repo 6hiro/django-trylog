@@ -6,9 +6,10 @@ from django.conf import settings
 from django.shortcuts import redirect
 import jwt
 import random
-from rest_framework import generics, status, views, viewsets, exceptions
+from rest_framework import generics, status, views, viewsets, exceptions, mixins
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
+from rest_framework.authentication import get_authorization_header
 from rest_framework.permissions import AllowAny, IsAuthenticated
 import string
 
@@ -29,6 +30,7 @@ from ..permissions import (
 )
 from ..serializers.accounts_serializers import (
     UserSerializer,
+    GetUserSerializer,
     LoginSerializer,
     ProfileSerializer,
     ProfilesSerializer
@@ -104,6 +106,8 @@ class LoginAPIView(generics.GenericAPIView):
         serializers.is_valid()
 
         user = get_user_model().objects.get(email=request.data['email'])
+        # print(serializers.data)
+        # print(serializers.validated_data)
 
         UserToken.objects.create(
             user_id=str(user.id),
@@ -218,11 +222,34 @@ class ResetAPIView(views.APIView):
         })
 
 
+class UserAPIView(views.APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        auth = get_authorization_header(request).split()
+        if auth and len(auth) == 2:
+            token = auth[1].decode('utf-8')
+            id = decode_access_token(token)
+            user = get_user_model().objects.get(id=id)
+            if user:
+                serializer = GetUserSerializer(user)
+                return Response(serializer.data)
+
+        raise exceptions.AuthenticationFailed('unauthenticated')
+
+
+class UpdateUserAPIView(generics.UpdateAPIView):
+    queryset = get_user_model().objects.all()
+    serializer_class = GetUserSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = (InOwnOrReadOnly, IsAuthenticated)
+
+
 class DeleteUserAPIView(generics.DestroyAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (InOwnOrReadOnly,)
+    permission_classes = (InOwnOrReadOnly, IsAuthenticated)
 
 
 @api_view(['GET'])
