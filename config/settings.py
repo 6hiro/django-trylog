@@ -172,7 +172,7 @@ REST_FRAMEWORK = {
     # snakecaseをcamelcaseに
     'DEFAULT_RENDERER_CLASSES': (
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
-        'djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer',
+        # 'djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer',
         # Any other renders
     ),
     'DEFAULT_PARSER_CLASSES': (
@@ -191,8 +191,8 @@ CORS_ORIGIN_WHITELIST = [env('CORS_ORIGIN_WHITELIST')]
 # If True, cookies will be allowed to be included in cross-site HTTP requests. Defaults to False.
 CORS_ALLOW_CREDENTIALS = True
 
-SESSION_COOKIE_SAMESITE = 'None'  # default='Lax'
-SESSION_COOKIE_SECURE = True
+# SESSION_COOKIE_SAMESITE = 'None'  # default='Lax'
+# SESSION_COOKIE_SECURE = True
 
 # redirect先に使う
 FRONTEND_URL = env('CORS_ORIGIN_WHITELIST')
