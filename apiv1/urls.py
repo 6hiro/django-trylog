@@ -6,7 +6,6 @@ from .views import (
     posts_views,
     roadmaps_views
 )
-from django.views.decorators.csrf import csrf_exempt
 
 app_name = 'apiv1'
 
@@ -26,9 +25,8 @@ urlpatterns = [
     # register, login)
     path('register/', accounts_views.RegisterAPIView.as_view(), name="register"),
     path('email-verify/', accounts_views.VerifyEmail.as_view(), name="email-verify"),
-    path('login/', csrf_exempt(accounts_views.LoginAPIView.as_view()), name="login"),
-    path('refresh/', csrf_exempt(accounts_views.RefreshAPIView.as_view()),
-         name='refresh-token'),
+    path('login/', accounts_views.LoginAPIView.as_view(), name="login"),
+    path('refresh/', accounts_views.RefreshAPIView.as_view(), name='refresh-token'),
     path('logout/', accounts_views.LogoutAPIView.as_view(), name='logout'),
     path('forgot/', accounts_views.ForgotAPIView.as_view(), name='forgot-password'),
     path('reset-password/', accounts_views.ResetAPIView.as_view(),
