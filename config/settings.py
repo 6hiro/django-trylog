@@ -172,7 +172,7 @@ REST_FRAMEWORK = {
     # snakecaseをcamelcaseに
     'DEFAULT_RENDERER_CLASSES': (
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
-        # 'djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer',
+        'djangorestframework_camel_case.render.CamelCaseBrowsableAPIRenderer',
         # Any other renders
     ),
     'DEFAULT_PARSER_CLASSES': (
@@ -186,8 +186,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 # CORS
-CORS_ALLOW_ALL_ORIGINS = True
-# CORS_ORIGIN_WHITELIST = [env('CORS_ORIGIN_WHITELIST')]
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ORIGIN_WHITELIST = [env('CORS_ORIGIN_WHITELIST')]
 # If True, cookies will be allowed to be included in cross-site HTTP requests. Defaults to False.
 CORS_ALLOW_CREDENTIALS = True
 
