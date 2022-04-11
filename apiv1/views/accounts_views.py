@@ -121,7 +121,9 @@ class LoginAPIView(generics.GenericAPIView):
             key='refresh_token',
             value=serializers.data["tokens"]["refresh_token"],
             # max_age=60*60*24*7,
-            httponly=True
+            httponly=True,
+            secure=True,
+            samesite='None'
         )
         response.data = {
             'token': serializers.data["tokens"]["access_token"]
