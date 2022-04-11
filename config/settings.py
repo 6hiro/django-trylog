@@ -187,7 +187,7 @@ REST_FRAMEWORK = {
 }
 # CORS
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ORIGIN_WHITELIST = [env('CORS_ORIGIN_WHITELIST')]
+CORS_ALLOWED_ORIGINS = [env('CORS_ORIGIN_WHITELIST')]
 # If True, cookies will be allowed to be included in cross-site HTTP requests. Defaults to False.
 CORS_ALLOW_CREDENTIALS = True
 
