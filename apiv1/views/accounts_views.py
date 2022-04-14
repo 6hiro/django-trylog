@@ -115,33 +115,36 @@ class LoginAPIView(generics.GenericAPIView):
             expired_at=datetime.datetime.utcnow() + datetime.timedelta(days=7)
         )
 
-        response = Response()
-        # httponly cookie
-        response.set_cookie(
-            key='refresh_token',
-            value=serializers.data["tokens"]["refresh_token"],
-            # max_age=60*60*24*7,
-            httponly=True,
-            secure=True,
-            samesite='None'
-        )
-        response.data = {
-            'token': serializers.data["tokens"]["access_token"]
-        }
+        # response = Response()
+        # # httponly cookie
+        # response.set_cookie(
+        #     key='refresh_token',
+        #     value=serializers.data["tokens"]["refresh_token"],
+        #     # max_age=60*60*24*7,
+        #     httponly=True,
+        #     secure=True,
+        #     samesite='None'
+        # )
+        # response.data = {
+        #     'token': serializers.data["tokens"]["access_token"]
+        # }
 
-        return response
-        # return Response(serializers.data, status=status.HTTP_200_OK)
+        # return response
+        return Response(serializers.data)
 
 
 class RefreshAPIView(views.APIView):
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token')
-        id = decode_refresh_token(str(refresh_token))
+        # refresh_token = request.COOKIES.get('refresh_token')
+        # id = decode_refresh_token(str(refresh_token))
         # print(datetime.datetime.now(tz=datetime.timezone.utc))
         # print('########')
         # print(datetime.datetime.now(
         #     tz=datetime.timezone(datetime.timedelta(hours=+9), 'JST')
         # ))
+
+        refresh_token = request.data['refresh']
+        id = decode_refresh_token(str(refresh_token))
 
         if not UserToken.objects.filter(
                 user_id=id,
@@ -161,11 +164,12 @@ class RefreshAPIView(views.APIView):
 
 class LogoutAPIView(views.APIView):
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token')
+        # refresh_token = request.COOKIES.get('refresh_token')
+        refresh_token = request.data['refresh_token']
         UserToken.objects.filter(token=refresh_token).delete()
 
         response = Response()
-        response.delete_cookie(key='refresh_token')
+        # response.delete_cookie(key='refresh_token')
         response.data = {
             'message': 'success'
         }

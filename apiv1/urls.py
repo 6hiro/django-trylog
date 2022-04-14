@@ -22,7 +22,7 @@ router.register('lookback', roadmaps_views.LookBackViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    # register, login)
+    # register, login
     path('register/', accounts_views.RegisterAPIView.as_view(), name="register"),
     path('email-verify/', accounts_views.VerifyEmail.as_view(), name="email-verify"),
     path('login/', accounts_views.LoginAPIView.as_view(), name="login"),
@@ -45,8 +45,8 @@ urlpatterns = [
          name='get-followers-profile'),
     path('follow/<uuid:id>/', accounts_views.follow_user, name="follow-user"),
     # post
-    path('post/share/<uuid:post_id>', posts_views.share_post, name='post-share'),
-    path('post/unshare/<uuid:post_id>',
+    path('post/share/<uuid:post_id>/', posts_views.share_post, name='post-share'),
+    path('post/unshare/<uuid:post_id>/',
          posts_views.unshare_post, name='post-unshare'),
     path('post/user/<uuid:id>/', posts_views.post_user, name='post-user'),
     path('followuser/post/', posts_views.GetFollowUserPost.as_view(),

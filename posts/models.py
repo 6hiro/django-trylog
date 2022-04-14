@@ -17,7 +17,7 @@ class TagModel(models.Model):
 class PostModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     parent = models.ForeignKey(
-        'self', blank=True, null=True, on_delete=models.SET_NULL)
+        'self', blank=True, null=True, on_delete=models.CASCADE)
     post = models.TextField('投稿', max_length=255, blank=True, null=True)
     posted_by = models.ForeignKey(
         get_user_model(), on_delete=models.CASCADE, related_name='posted_by')
