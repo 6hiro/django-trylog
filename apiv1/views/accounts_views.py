@@ -165,7 +165,7 @@ class RefreshAPIView(views.APIView):
 class LogoutAPIView(views.APIView):
     def post(self, request):
         # refresh_token = request.COOKIES.get('refresh_token')
-        refresh_token = request.data['refresh_token']
+        refresh_token = request.data['refresh']
         UserToken.objects.filter(token=refresh_token).delete()
 
         response = Response()
